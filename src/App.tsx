@@ -1,35 +1,42 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+
+import React, { useCallback } from "react";
+import "./App.css";
+import { ChartProvider } from "./context/ChartContext";
+import ChartCanvas from "./components/ChartCanvas";
+import Chart from "./components/Chart";
+import CandleStickSeries from "./components/CandleStickSeries";
+import XAxis from "./components/XAxis";
+import YAxis from "./components/YAxis";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const yExtents = useCallback((data: unknown[]) => {
+    if (!data || data.length === 0) return [0, 100];
+    const ohlcData = data as Array<{ open: number; high: number; low: number; close: number }>;
+    const allValues = ohlcData.flatMap(d => [d.open, d.high, d.low, d.close]);
+    const min = Math.min(...allValues);
+    const max = Math.max(...allValues);
+    const padding = (max - min) * 0.1;
+    return [min - padding, max + padding];
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="App">
+      <h1>TS Algo Chart - Mum Grafik Örneği</h1>
+      <ChartProvider>
+        <ChartCanvas width={800} height={400}>
+          <Chart
+            id={1}
+            yExtents={yExtents}
+            height={400}
+          >
+            <CandleStickSeries />
+            <XAxis />
+            <YAxis width={800} />
+          </Chart>
+        </ChartCanvas>
+      </ChartProvider>
+    </div>
+  );
 }
 
-export default App
+export default App;
